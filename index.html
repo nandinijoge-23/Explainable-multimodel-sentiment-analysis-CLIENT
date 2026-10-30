@@ -1,0 +1,2412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Explainable Multimodal Sentiment Analysis</title>
+
+<style>
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+}
+
+body {
+    background: #f4f7fb;
+    color: #1f2937;
+    padding: 30px;
+}
+
+.container {
+    max-width: 1150px;
+    margin: auto;
+}
+
+h1 {
+    text-align: center;
+    margin-bottom: 30px;
+    color: #111827;
+    font-size: 32px;
+}
+
+.card {
+    background: #ffffff;
+    padding: 28px;
+    border-radius: 16px;
+    margin-bottom: 22px;
+    box-shadow: 0 5px 18px rgba(0, 0, 0, 0.07);
+}
+
+.card h2 {
+    margin-bottom: 20px;
+    color: #111827;
+}
+
+label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 8px;
+}
+
+textarea {
+    width: 100%;
+    min-height: 130px;
+    padding: 14px;
+    border: 1px solid #d1d5db;
+    border-radius: 10px;
+    resize: vertical;
+    margin-bottom: 25px;
+    font-size: 15px;
+}
+
+textarea:focus {
+    outline: none;
+    border-color: #2563eb;
+}
+
+.option-group {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+    margin-bottom: 18px;
+}
+
+.option {
+    border: 2px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 18px;
+    cursor: pointer;
+    background: #ffffff;
+    transition: 0.2s;
+}
+
+.option:hover {
+    border-color: #2563eb;
+}
+
+.option.active {
+    border-color: #2563eb;
+    background: #eff6ff;
+}
+
+.option-title {
+    font-size: 17px;
+    font-weight: bold;
+    margin-bottom: 7px;
+    color: #111827;
+}
+
+.option-text {
+    color: #6b7280;
+    font-size: 14px;
+}
+
+input[type="file"] {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #d1d5db;
+    border-radius: 10px;
+    margin-top: 10px;
+    margin-bottom: 15px;
+}
+
+button {
+    width: 100%;
+    padding: 14px;
+    border: none;
+    border-radius: 10px;
+    background: #2563eb;
+    color: white;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+button:hover {
+    background: #1d4ed8;
+}
+
+button:disabled {
+    background: #9ca3af;
+    cursor: not-allowed;
+}
+
+.secondary-btn {
+    background: #64748b;
+    margin-top: 10px;
+}
+
+.secondary-btn:hover {
+    background: #475569;
+}
+
+.stop-camera-btn {
+    background: #dc2626;
+    margin-top: 10px;
+}
+
+.stop-camera-btn:hover {
+    background: #b91c1c;
+}
+
+.recording {
+    background: #dc2626 !important;
+}
+
+.preview {
+    width: 100%;
+    margin-top: 12px;
+    border-radius: 10px;
+}
+
+.camera-box {
+    text-align: center;
+}
+
+video {
+    width: 100%;
+    max-width: 520px;
+    border-radius: 12px;
+    margin-top: 15px;
+    background: #111827;
+}
+
+canvas {
+    display: none;
+}
+
+.status {
+    margin-top: 12px;
+    text-align: center;
+    color: #64748b;
+    font-size: 14px;
+}
+
+.loading {
+    text-align: center;
+    color: #64748b;
+    margin-top: 15px;
+}
+
+.error {
+    color: #dc2626;
+    text-align: center;
+    margin-top: 15px;
+    font-weight: bold;
+}
+
+.hidden {
+    display: none !important;
+}
+
+
+/* =========================
+   RESULT CARDS
+========================= */
+
+.result-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px;
+}
+
+.result-box {
+    background: #f8fafc;
+    padding: 22px;
+    border-radius: 12px;
+    border: 1px solid #e5e7eb;
+}
+
+.result-box h3 {
+    margin-bottom: 14px;
+    color: #111827;
+}
+
+.emotion {
+    font-size: 25px;
+    font-weight: bold;
+    color: #2563eb;
+    margin-bottom: 10px;
+}
+
+.confidence {
+    color: #64748b;
+    margin-bottom: 13px;
+}
+
+.explanation {
+    color: #475569;
+    line-height: 1.6;
+}
+
+.scores {
+    margin-top: 16px;
+}
+
+.score-row {
+    margin-bottom: 11px;
+}
+
+.score-name {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 5px;
+    font-size: 14px;
+}
+
+.bar {
+    width: 100%;
+    height: 8px;
+    background: #e2e8f0;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.bar-fill {
+    height: 100%;
+    border-radius: 10px;
+}
+
+
+/* =========================
+   FINAL RESULT
+========================= */
+
+.final-result {
+    text-align: center;
+    background: #eff6ff;
+    border: 2px solid #bfdbfe;
+}
+
+.final-emotion {
+    font-size: 36px;
+    font-weight: bold;
+    color: #1d4ed8;
+    margin: 16px 0;
+}
+
+
+/* =========================
+   PROFESSIONAL GRAPH
+========================= */
+
+.graph-card {
+    background: #ffffff;
+}
+
+.graph-title {
+    font-size: 23px;
+    font-weight: bold;
+    margin-bottom: 6px;
+    color: #111827;
+}
+
+.graph-description {
+    color: #64748b;
+    margin-bottom: 25px;
+    font-size: 14px;
+}
+
+.graph-area {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.graph {
+    min-width: 800px;
+}
+
+.graph-legend {
+    display: flex;
+    justify-content: center;
+    gap: 28px;
+    margin-bottom: 20px;
+    font-size: 14px;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+}
+
+.legend-color {
+    width: 14px;
+    height: 14px;
+    border-radius: 3px;
+}
+
+.legend-text {
+    background: #0f766e;
+}
+
+.legend-face {
+    background: #2563eb;
+}
+
+.legend-voice {
+    background: #7c3aed;
+}
+
+.chart {
+    display: flex;
+    height: 390px;
+    border-left: 1px solid #cbd5e1;
+    border-bottom: 1px solid #cbd5e1;
+    position: relative;
+}
+
+.y-axis {
+    width: 55px;
+    position: relative;
+    flex-shrink: 0;
+}
+
+.y-label {
+    position: absolute;
+    right: 10px;
+    transform: translateY(50%);
+    font-size: 12px;
+    color: #64748b;
+}
+
+.chart-content {
+    flex: 1;
+    position: relative;
+    background:
+        repeating-linear-gradient(
+            to bottom,
+            transparent 0,
+            transparent 19.8%,
+            #e5e7eb 20%,
+            #e5e7eb calc(20% + 1px)
+        );
+}
+
+.bars-container {
+    height: 100%;
+    display: flex;
+    justify-content: space-around;
+    align-items: flex-end;
+    padding: 0 35px;
+}
+
+.emotion-group {
+    height: 100%;
+    width: 120px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    gap: 5px;
+    position: relative;
+}
+
+.single-bar {
+    width: 25px;
+    min-height: 2px;
+    border-radius: 5px 5px 0 0;
+    transition: 0.3s;
+}
+
+.single-bar:hover {
+    opacity: 0.75;
+}
+
+.text-bar {
+    background: #0f766e;
+}
+
+.face-bar {
+    background: #2563eb;
+}
+
+.voice-bar {
+    background: #7c3aed;
+}
+
+.x-labels {
+    display: flex;
+    justify-content: space-around;
+    padding: 10px 35px 0 90px;
+}
+
+.x-label {
+    width: 120px;
+    text-align: center;
+    font-size: 13px;
+    color: #475569;
+}
+
+.graph-note {
+    margin-top: 20px;
+    color: #64748b;
+    font-size: 13px;
+    text-align: center;
+}
+
+
+/* =========================
+   RESPONSIVE
+========================= */
+
+@media (max-width: 850px) {
+
+    .result-grid,
+    .option-group {
+        grid-template-columns: 1fr;
+    }
+
+    body {
+        padding: 15px;
+    }
+
+    h1 {
+        font-size: 25px;
+    }
+}
+</style>
+</head>
+
+
+<body>
+
+<div class="container">
+
+<h1>
+    Explainable Multimodal Sentiment Analysis
+</h1>
+
+
+<!-- =========================
+     INPUT SECTION
+========================= -->
+
+<div class="card">
+
+<h2>Input Data</h2>
+
+
+<!-- TEXT -->
+
+<label>
+    Text
+</label>
+
+<textarea
+    id="textInput"
+    placeholder="Enter your text here..."
+></textarea>
+
+
+<!-- =========================
+     VOICE
+========================= -->
+
+<h2>
+    Voice
+</h2>
+
+<div class="option-group">
+
+<div
+    class="option"
+    id="uploadVoiceOption"
+    onclick="selectVoiceMode('upload')"
+>
+
+<div class="option-title">
+    Upload Voice Recording
+</div>
+
+<div class="option-text">
+    Upload a WAV or audio recording.
+</div>
+
+</div>
+
+
+<div
+    class="option"
+    id="liveVoiceOption"
+    onclick="selectVoiceMode('live')"
+>
+
+<div class="option-title">
+    Live Voice
+</div>
+
+<div class="option-text">
+    Record your voice using microphone.
+</div>
+
+</div>
+
+</div>
+
+
+<div
+    id="voiceUploadBox"
+    class="hidden"
+>
+
+<input
+    type="file"
+    id="voiceInput"
+    accept="audio/*,.wav,.webm"
+>
+
+<audio
+    id="audioPreview"
+    class="preview hidden"
+    controls
+></audio>
+
+</div>
+
+
+<div
+    id="liveVoiceBox"
+    class="hidden"
+>
+
+<button
+    id="recordBtn"
+    onclick="toggleRecording()"
+>
+    Start Recording
+</button>
+
+<div
+    id="recordStatus"
+    class="status"
+></div>
+
+<audio
+    id="recordedAudio"
+    class="preview hidden"
+    controls
+></audio>
+
+</div>
+
+
+<!-- =========================
+     FACE
+========================= -->
+
+<h2 style="margin-top:28px;">
+    Face
+</h2>
+
+
+<div class="option-group">
+
+<div
+    class="option"
+    id="uploadFaceOption"
+    onclick="selectFaceMode('upload')"
+>
+
+<div class="option-title">
+    Upload Face Photo
+</div>
+
+<div class="option-text">
+    Upload a face image for emotion detection.
+</div>
+
+</div>
+
+
+<div
+    class="option"
+    id="liveCameraOption"
+    onclick="selectFaceMode('camera')"
+>
+
+<div class="option-title">
+    Live Camera
+</div>
+
+<div class="option-text">
+    Use your webcam for live face detection.
+</div>
+
+</div>
+
+</div>
+
+
+<div
+    id="faceUploadBox"
+    class="hidden"
+>
+
+<input
+    type="file"
+    id="faceInput"
+    accept="image/*"
+>
+
+</div>
+
+
+<div
+    id="liveCameraBox"
+    class="camera-box hidden"
+>
+
+<video
+    id="camera"
+    autoplay
+    playsinline
+></video>
+
+
+<button
+    onclick="capturePhoto()"
+    class="secondary-btn"
+>
+    Capture Photo
+</button>
+
+
+<button
+    onclick="stopCamera()"
+    class="stop-camera-btn"
+>
+    Stop Camera
+</button>
+
+
+<canvas
+    id="canvas"
+></canvas>
+
+
+<div
+    id="cameraStatus"
+    class="status"
+></div>
+
+</div>
+
+
+<!-- ANALYZE -->
+
+<button
+    id="analyzeBtn"
+    onclick="analyzeData()"
+    style="margin-top:22px;"
+>
+    Analyze Emotion
+</button>
+
+
+<!-- RESET -->
+
+<button
+    onclick="resetAll()"
+    class="secondary-btn"
+>
+    Reset
+</button>
+
+
+<div
+    id="loading"
+    class="loading hidden"
+>
+    Analyzing...
+</div>
+
+
+<div
+    id="error"
+    class="error"
+></div>
+
+</div>
+
+
+<!-- =========================
+     FINAL RESULT
+========================= -->
+
+<div
+    id="finalCard"
+    class="card final-result hidden"
+>
+
+<h2>
+    Final Result
+</h2>
+
+
+<div
+    id="finalEmotion"
+    class="final-emotion"
+>
+    -
+</div>
+
+
+<p
+    id="finalExplanation"
+    class="explanation"
+></p>
+
+</div>
+
+
+<!-- =========================
+     INDIVIDUAL RESULTS
+========================= -->
+
+<div
+    id="results"
+    class="result-grid hidden"
+>
+
+
+<!-- TEXT -->
+
+<div class="result-box">
+
+<h3>
+    Text Analysis
+</h3>
+
+<div
+    id="textEmotion"
+    class="emotion"
+>
+    -
+</div>
+
+<div
+    id="textSentiment"
+    class="confidence"
+>
+    -
+</div>
+
+<p
+    id="textExplanation"
+    class="explanation"
+></p>
+
+<div
+    id="textScores"
+    class="scores"
+></div>
+
+</div>
+
+
+<!-- VOICE -->
+
+<div class="result-box">
+
+<h3>
+    Voice Analysis
+</h3>
+
+<div
+    id="voiceEmotion"
+    class="emotion"
+>
+    -
+</div>
+
+<div
+    id="voiceConfidence"
+    class="confidence"
+>
+    -
+</div>
+
+<p
+    id="voiceExplanation"
+    class="explanation"
+></p>
+
+<div
+    id="voiceScores"
+    class="scores"
+></div>
+
+</div>
+
+
+<!-- FACE -->
+
+<div class="result-box">
+
+<h3>
+    Face Analysis
+</h3>
+
+<div
+    id="faceEmotion"
+    class="emotion"
+>
+    -
+</div>
+
+<div
+    id="faceConfidence"
+    class="confidence"
+>
+    -
+</div>
+
+<p
+    id="faceExplanation"
+    class="explanation"
+></p>
+
+<div
+    id="faceScores"
+    class="scores"
+></div>
+
+</div>
+
+</div>
+
+
+<!-- =========================
+     PROFESSIONAL GRAPH
+========================= -->
+
+<div
+    id="graphCard"
+    class="card graph-card hidden"
+>
+
+<div class="graph-title">
+    Emotion Detected from Text, Face & Voice
+</div>
+
+<div class="graph-description">
+    Comparative emotion confidence scores across all three modalities.
+</div>
+
+
+<div class="graph-legend">
+
+<div class="legend-item">
+<span class="legend-color legend-text"></span>
+<span>Text</span>
+</div>
+
+<div class="legend-item">
+<span class="legend-color legend-face"></span>
+<span>Face</span>
+</div>
+
+<div class="legend-item">
+<span class="legend-color legend-voice"></span>
+<span>Voice</span>
+</div>
+
+</div>
+
+
+<div class="graph-area">
+
+<div class="graph">
+
+<div class="chart">
+
+<div class="y-axis">
+
+<div
+class="y-label"
+style="bottom:100%;"
+>
+100%
+</div>
+
+<div
+class="y-label"
+style="bottom:80%;"
+>
+80%
+</div>
+
+<div
+class="y-label"
+style="bottom:60%;"
+>
+60%
+</div>
+
+<div
+class="y-label"
+style="bottom:40%;"
+>
+40%
+</div>
+
+<div
+class="y-label"
+style="bottom:20%;"
+>
+20%
+</div>
+
+<div
+class="y-label"
+style="bottom:0%;"
+>
+0%
+</div>
+
+</div>
+
+
+<div
+id="chartContent"
+class="chart-content"
+>
+
+<div
+id="barsContainer"
+class="bars-container"
+></div>
+
+</div>
+
+</div>
+
+
+<div
+id="xLabels"
+class="x-labels"
+></div>
+
+</div>
+
+</div>
+
+
+<div class="graph-note">
+    Emotions with zero scores are hidden from the graph.
+</div>
+
+</div>
+
+</div>
+
+
+<script>
+
+const API_URL =
+    "http://127.0.0.1:8000";
+
+
+let voiceMode = null;
+let faceMode = null;
+
+let mediaRecorder = null;
+let audioChunks = [];
+let recordedVoiceBlob = null;
+
+let cameraStream = null;
+let capturedFaceBlob = null;
+
+
+/* =========================
+   VOICE MODE
+========================= */
+
+function selectVoiceMode(mode) {
+
+    voiceMode = mode;
+
+    const uploadOption =
+        document.getElementById(
+            "uploadVoiceOption"
+        );
+
+    const liveOption =
+        document.getElementById(
+            "liveVoiceOption"
+        );
+
+    const uploadBox =
+        document.getElementById(
+            "voiceUploadBox"
+        );
+
+    const liveBox =
+        document.getElementById(
+            "liveVoiceBox"
+        );
+
+
+    uploadOption.classList.remove(
+        "active"
+    );
+
+    liveOption.classList.remove(
+        "active"
+    );
+
+    uploadBox.classList.add(
+        "hidden"
+    );
+
+    liveBox.classList.add(
+        "hidden"
+    );
+
+
+    if (mode === "upload") {
+
+        uploadOption.classList.add(
+            "active"
+        );
+
+        uploadBox.classList.remove(
+            "hidden"
+        );
+
+    }
+
+
+    if (mode === "live") {
+
+        liveOption.classList.add(
+            "active"
+        );
+
+        liveBox.classList.remove(
+            "hidden"
+        );
+
+    }
+}
+
+
+/* =========================
+   FACE MODE
+========================= */
+
+function selectFaceMode(mode) {
+
+    faceMode = mode;
+
+    const uploadOption =
+        document.getElementById(
+            "uploadFaceOption"
+        );
+
+    const cameraOption =
+        document.getElementById(
+            "liveCameraOption"
+        );
+
+    const uploadBox =
+        document.getElementById(
+            "faceUploadBox"
+        );
+
+    const cameraBox =
+        document.getElementById(
+            "liveCameraBox"
+        );
+
+
+    uploadOption.classList.remove(
+        "active"
+    );
+
+    cameraOption.classList.remove(
+        "active"
+    );
+
+    uploadBox.classList.add(
+        "hidden"
+    );
+
+    cameraBox.classList.add(
+        "hidden"
+    );
+
+
+    if (mode === "upload") {
+
+        uploadOption.classList.add(
+            "active"
+        );
+
+        uploadBox.classList.remove(
+            "hidden"
+        );
+
+        stopCamera();
+
+    }
+
+
+    if (mode === "camera") {
+
+        cameraOption.classList.add(
+            "active"
+        );
+
+        cameraBox.classList.remove(
+            "hidden"
+        );
+
+        startCamera();
+
+    }
+}
+
+
+/* =========================
+   VOICE PREVIEW
+========================= */
+
+document
+    .getElementById("voiceInput")
+    .addEventListener(
+        "change",
+        function () {
+
+            const file =
+                this.files[0];
+
+            const preview =
+                document.getElementById(
+                    "audioPreview"
+                );
+
+
+            if (!file) {
+
+                preview.classList.add(
+                    "hidden"
+                );
+
+                preview.removeAttribute(
+                    "src"
+                );
+
+                return;
+            }
+
+
+            const url =
+                URL.createObjectURL(
+                    file
+                );
+
+            preview.src = url;
+
+            preview.classList.remove(
+                "hidden"
+            );
+        }
+    );
+
+
+/* =========================
+   LIVE VOICE
+========================= */
+
+async function toggleRecording() {
+
+    const button =
+        document.getElementById(
+            "recordBtn"
+        );
+
+    const status =
+        document.getElementById(
+            "recordStatus"
+        );
+
+
+    if (!mediaRecorder) {
+
+        try {
+
+            const stream =
+                await navigator
+                    .mediaDevices
+                    .getUserMedia({
+                        audio: true
+                    });
+
+
+            audioChunks = [];
+
+
+            mediaRecorder =
+                new MediaRecorder(
+                    stream
+                );
+
+
+            mediaRecorder.ondataavailable =
+                function (event) {
+
+                    if (
+                        event.data.size >
+                        0
+                    ) {
+
+                        audioChunks.push(
+                            event.data
+                        );
+                    }
+                };
+
+
+            mediaRecorder.onstop =
+                function () {
+
+                    recordedVoiceBlob =
+                        new Blob(
+                            audioChunks,
+                            {
+                                type:
+                                    "audio/webm"
+                            }
+                        );
+
+
+                    const url =
+                        URL.createObjectURL(
+                            recordedVoiceBlob
+                        );
+
+
+                    const audio =
+                        document.getElementById(
+                            "recordedAudio"
+                        );
+
+
+                    audio.src = url;
+
+                    audio.classList.remove(
+                        "hidden"
+                    );
+
+
+                    stream
+                        .getTracks()
+                        .forEach(
+                            track =>
+                                track.stop()
+                        );
+
+
+                    status.textContent =
+                        "Recording completed.";
+
+
+                    mediaRecorder = null;
+
+
+                    button.textContent =
+                        "Start Recording";
+
+
+                    button.classList.remove(
+                        "recording"
+                    );
+                };
+
+
+            mediaRecorder.start();
+
+
+            button.textContent =
+                "Stop Recording";
+
+
+            button.classList.add(
+                "recording"
+            );
+
+
+            status.textContent =
+                "Recording...";
+
+        }
+
+        catch (error) {
+
+            status.textContent =
+                "Microphone permission denied.";
+
+            console.error(error);
+        }
+
+    }
+
+    else {
+
+        mediaRecorder.stop();
+    }
+}
+
+
+/* =========================
+   CAMERA
+========================= */
+
+async function startCamera() {
+
+    const video =
+        document.getElementById(
+            "camera"
+        );
+
+    const status =
+        document.getElementById(
+            "cameraStatus"
+        );
+
+
+    try {
+
+        cameraStream =
+            await navigator
+                .mediaDevices
+                .getUserMedia({
+                    video: true
+                });
+
+
+        video.srcObject =
+            cameraStream;
+
+
+        status.textContent =
+            "Camera is active.";
+
+    }
+
+    catch (error) {
+
+        status.textContent =
+            "Camera permission denied.";
+
+        console.error(error);
+    }
+}
+
+
+/* STOP CAMERA */
+
+function stopCamera() {
+
+    if (cameraStream) {
+
+        cameraStream
+            .getTracks()
+            .forEach(
+                track =>
+                    track.stop()
+            );
+
+        cameraStream = null;
+    }
+
+
+    const video =
+        document.getElementById(
+            "camera"
+        );
+
+
+    video.srcObject = null;
+
+
+    document.getElementById(
+        "cameraStatus"
+    ).textContent =
+        "Camera stopped.";
+}
+
+
+/* CAPTURE PHOTO */
+
+function capturePhoto() {
+
+    const video =
+        document.getElementById(
+            "camera"
+        );
+
+    const canvas =
+        document.getElementById(
+            "canvas"
+        );
+
+    const status =
+        document.getElementById(
+            "cameraStatus"
+        );
+
+
+    if (!cameraStream) {
+
+        status.textContent =
+            "Camera is not active.";
+
+        return;
+    }
+
+
+    canvas.width =
+        video.videoWidth;
+
+    canvas.height =
+        video.videoHeight;
+
+
+    const context =
+        canvas.getContext(
+            "2d"
+        );
+
+
+    context.drawImage(
+        video,
+        0,
+        0,
+        canvas.width,
+        canvas.height
+    );
+
+
+    canvas.toBlob(
+        function (blob) {
+
+            capturedFaceBlob =
+                blob;
+
+
+            status.textContent =
+                "Photo captured successfully.";
+
+        },
+        "image/jpeg"
+    );
+}
+
+
+/* =========================
+   SCORE BARS
+========================= */
+
+function createScores(
+    containerId,
+    scores
+) {
+
+    const container =
+        document.getElementById(
+            containerId
+        );
+
+
+    container.innerHTML = "";
+
+
+    if (!scores) {
+        return;
+    }
+
+
+    const sortedScores =
+        Object.entries(scores)
+            .sort(
+                (a, b) =>
+                    b[1] - a[1]
+            )
+            .slice(0, 5);
+
+
+    sortedScores.forEach(
+        ([emotion, score]) => {
+
+            const row =
+                document.createElement(
+                    "div"
+                );
+
+
+            row.className =
+                "score-row";
+
+
+            row.innerHTML = `
+                <div class="score-name">
+                    <span>${emotion}</span>
+                    <span>${Number(score).toFixed(2)}%</span>
+                </div>
+
+                <div class="bar">
+                    <div
+                        class="bar-fill"
+                        style="
+                            width:${Math.min(
+                                Number(score),
+                                100
+                            )}%;
+                            background:#2563eb;
+                        "
+                    ></div>
+                </div>
+            `;
+
+
+            container.appendChild(
+                row
+            );
+        }
+    );
+}
+
+
+/* =========================
+   TEXT RESULT
+========================= */
+
+function showTextResult(result) {
+
+    if (!result) {
+
+        document.getElementById(
+            "textEmotion"
+        ).textContent = "-";
+
+        document.getElementById(
+            "textSentiment"
+        ).textContent = "-";
+
+        document.getElementById(
+            "textExplanation"
+        ).textContent = "";
+
+        return;
+    }
+
+
+    document.getElementById(
+        "textEmotion"
+    ).textContent =
+        result.emotion ||
+        "Neutral";
+
+
+    document.getElementById(
+        "textSentiment"
+    ).textContent =
+        "Sentiment: " +
+        (
+            result.sentiment ||
+            "Neutral"
+        );
+
+
+    document.getElementById(
+        "textExplanation"
+    ).textContent =
+        result.emotion_explanation ||
+        result.sentiment_explanation ||
+        "";
+
+
+    createScores(
+        "textScores",
+        result.emotion_scores
+    );
+}
+
+
+/* =========================
+   VOICE RESULT
+========================= */
+
+function showVoiceResult(result) {
+
+    if (!result) {
+
+        document.getElementById(
+            "voiceEmotion"
+        ).textContent = "-";
+
+        document.getElementById(
+            "voiceConfidence"
+        ).textContent = "-";
+
+        document.getElementById(
+            "voiceExplanation"
+        ).textContent = "";
+
+        return;
+    }
+
+
+    document.getElementById(
+        "voiceEmotion"
+    ).textContent =
+        result.emotion ||
+        "Neutral";
+
+
+    document.getElementById(
+        "voiceConfidence"
+    ).textContent =
+        "Confidence: " +
+        Number(
+            result.confidence ||
+            0
+        ).toFixed(2) +
+        "%";
+
+
+    document.getElementById(
+        "voiceExplanation"
+    ).textContent =
+        result.explanation ||
+        "";
+
+
+    createScores(
+        "voiceScores",
+        result.emotion_scores
+    );
+}
+
+
+/* =========================
+   FACE RESULT
+========================= */
+
+function showFaceResult(result) {
+
+    if (!result) {
+
+        document.getElementById(
+            "faceEmotion"
+        ).textContent = "-";
+
+        document.getElementById(
+            "faceConfidence"
+        ).textContent = "-";
+
+        document.getElementById(
+            "faceExplanation"
+        ).textContent = "";
+
+        return;
+    }
+
+
+    document.getElementById(
+        "faceEmotion"
+    ).textContent =
+        result.emotion ||
+        "Neutral";
+
+
+    document.getElementById(
+        "faceConfidence"
+    ).textContent =
+        "Confidence: " +
+        Number(
+            result.confidence ||
+            0
+        ).toFixed(2) +
+        "%";
+
+
+    document.getElementById(
+        "faceExplanation"
+    ).textContent =
+        result.explanation ||
+        "";
+
+
+    createScores(
+        "faceScores",
+        result.emotion_scores
+    );
+}
+
+
+/* =========================
+   PROFESSIONAL GRAPH
+========================= */
+
+function showEmotionGraph(data) {
+
+    const graphCard =
+        document.getElementById(
+            "graphCard"
+        );
+
+    const barsContainer =
+        document.getElementById(
+            "barsContainer"
+        );
+
+    const xLabels =
+        document.getElementById(
+            "xLabels"
+        );
+
+
+    barsContainer.innerHTML = "";
+    xLabels.innerHTML = "";
+
+
+    const emotionData = {};
+
+
+    function addScores(
+        analysis,
+        modality
+    ) {
+
+        if (
+            !analysis ||
+            !analysis.emotion_scores
+        ) {
+            return;
+        }
+
+
+        Object.entries(
+            analysis.emotion_scores
+        ).forEach(
+            ([emotion, score]) => {
+
+                if (!emotionData[emotion]) {
+
+                    emotionData[emotion] = {
+                        Text: 0,
+                        Face: 0,
+                        Voice: 0
+                    };
+                }
+
+
+                emotionData[emotion][
+                    modality
+                ] =
+                    Number(score);
+            }
+        );
+    }
+
+
+    addScores(
+        data.text_analysis,
+        "Text"
+    );
+
+    addScores(
+        data.face_analysis,
+        "Face"
+    );
+
+    addScores(
+        data.voice_analysis,
+        "Voice"
+    );
+
+
+    const emotions =
+        Object.keys(
+            emotionData
+        ).filter(
+            emotion => {
+
+                const values =
+                    emotionData[
+                        emotion
+                    ];
+
+                return (
+                    values.Text > 0 ||
+                    values.Face > 0 ||
+                    values.Voice > 0
+                );
+            }
+        );
+
+
+    if (emotions.length === 0) {
+
+        graphCard.classList.add(
+            "hidden"
+        );
+
+        return;
+    }
+
+
+    emotions.forEach(
+        emotion => {
+
+            const group =
+                document.createElement(
+                    "div"
+                );
+
+            group.className =
+                "emotion-group";
+
+
+            const values =
+                emotionData[
+                    emotion
+                ];
+
+
+            const textBar =
+                document.createElement(
+                    "div"
+                );
+
+            textBar.className =
+                "single-bar text-bar";
+
+            textBar.title =
+                "Text: " +
+                values.Text.toFixed(
+                    2
+                ) +
+                "%";
+
+            textBar.style.height =
+                Math.min(
+                    values.Text,
+                    100
+                ) +
+                "%";
+
+
+            const faceBar =
+                document.createElement(
+                    "div"
+                );
+
+            faceBar.className =
+                "single-bar face-bar";
+
+            faceBar.title =
+                "Face: " +
+                values.Face.toFixed(
+                    2
+                ) +
+                "%";
+
+            faceBar.style.height =
+                Math.min(
+                    values.Face,
+                    100
+                ) +
+                "%";
+
+
+            const voiceBar =
+                document.createElement(
+                    "div"
+                );
+
+            voiceBar.className =
+                "single-bar voice-bar";
+
+            voiceBar.title =
+                "Voice: " +
+                values.Voice.toFixed(
+                    2
+                ) +
+                "%";
+
+            voiceBar.style.height =
+                Math.min(
+                    values.Voice,
+                    100
+                ) +
+                "%";
+
+
+            group.appendChild(
+                textBar
+            );
+
+            group.appendChild(
+                faceBar
+            );
+
+            group.appendChild(
+                voiceBar
+            );
+
+
+            barsContainer.appendChild(
+                group
+            );
+
+
+            const label =
+                document.createElement(
+                    "div"
+                );
+
+            label.className =
+                "x-label";
+
+            label.textContent =
+                emotion;
+
+
+            xLabels.appendChild(
+                label
+            );
+        }
+    );
+
+
+    graphCard.classList.remove(
+        "hidden"
+    );
+}
+
+
+/* =========================
+   ANALYZE
+========================= */
+
+async function analyzeData() {
+
+    const text =
+        document.getElementById(
+            "textInput"
+        ).value.trim();
+
+
+    const voiceInput =
+        document.getElementById(
+            "voiceInput"
+        );
+
+
+    const faceInput =
+        document.getElementById(
+            "faceInput"
+        );
+
+
+    const button =
+        document.getElementById(
+            "analyzeBtn"
+        );
+
+
+    const loading =
+        document.getElementById(
+            "loading"
+        );
+
+
+    const error =
+        document.getElementById(
+            "error"
+        );
+
+
+    error.textContent = "";
+
+
+    let voiceFile = null;
+    let faceFile = null;
+
+
+    if (
+        voiceMode ===
+        "upload"
+    ) {
+
+        voiceFile =
+            voiceInput.files[0] ||
+            null;
+    }
+
+
+    if (
+        voiceMode ===
+        "live"
+    ) {
+
+        if (
+            recordedVoiceBlob
+        ) {
+
+            voiceFile =
+                new File(
+                    [
+                        recordedVoiceBlob
+                    ],
+                    "live_voice.webm",
+                    {
+                        type:
+                            "audio/webm"
+                    }
+                );
+        }
+    }
+
+
+    if (
+        faceMode ===
+        "upload"
+    ) {
+
+        faceFile =
+            faceInput.files[0] ||
+            null;
+    }
+
+
+    if (
+        faceMode ===
+        "camera"
+    ) {
+
+        if (
+            capturedFaceBlob
+        ) {
+
+            faceFile =
+                new File(
+                    [
+                        capturedFaceBlob
+                    ],
+                    "live_face.jpg",
+                    {
+                        type:
+                            "image/jpeg"
+                    }
+                );
+        }
+    }
+
+
+    if (
+        !text &&
+        !voiceFile &&
+        !faceFile
+    ) {
+
+        error.textContent =
+            "Please provide at least one input.";
+
+        return;
+    }
+
+
+    const formData =
+        new FormData();
+
+
+    if (text) {
+
+        formData.append(
+            "text",
+            text
+        );
+    }
+
+
+    if (voiceFile) {
+
+        formData.append(
+            "voice_audio",
+            voiceFile
+        );
+    }
+
+
+    if (faceFile) {
+
+        formData.append(
+            "face_image",
+            faceFile
+        );
+    }
+
+
+    button.disabled = true;
+
+    loading.classList.remove(
+        "hidden"
+    );
+
+
+    try {
+
+        const response =
+            await fetch(
+                API_URL +
+                "/multimodal-analysis",
+                {
+                    method:
+                        "POST",
+                    body:
+                        formData
+                }
+            );
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                "Server error: " +
+                response.status
+            );
+        }
+
+
+        const data =
+            await response.json();
+
+
+        console.log(
+            "Analysis result:",
+            data
+        );
+
+
+        showTextResult(
+            data.text_analysis
+        );
+
+
+        showVoiceResult(
+            data.voice_analysis
+        );
+
+
+        showFaceResult(
+            data.face_analysis
+        );
+
+
+        if (
+            data.final_result
+        ) {
+
+            document.getElementById(
+                "finalEmotion"
+            ).textContent =
+                data.final_result.emotion ||
+                "Neutral";
+
+
+            document.getElementById(
+                "finalExplanation"
+            ).textContent =
+                data.final_result.explanation ||
+                "";
+
+
+            document.getElementById(
+                "finalCard"
+            ).classList.remove(
+                "hidden"
+            );
+        }
+
+
+        document.getElementById(
+            "results"
+        ).classList.remove(
+            "hidden"
+        );
+
+
+        showEmotionGraph(
+            data
+        );
+
+    }
+
+    catch (err) {
+
+        console.error(err);
+
+        error.textContent =
+            "Analysis failed: " +
+            err.message;
+
+    }
+
+    finally {
+
+        button.disabled =
+            false;
+
+        loading.classList.add(
+            "hidden"
+        );
+    }
+}
+
+
+/* =========================
+   RESET
+========================= */
+
+function resetAll() {
+
+    document.getElementById(
+        "textInput"
+    ).value = "";
+
+
+    document.getElementById(
+        "voiceInput"
+    ).value = "";
+
+
+    document.getElementById(
+        "faceInput"
+    ).value = "";
+
+
+    document.getElementById(
+        "audioPreview"
+    ).classList.add(
+        "hidden"
+    );
+
+
+    document.getElementById(
+        "recordedAudio"
+    ).classList.add(
+        "hidden"
+    );
+
+
+    document.getElementById(
+        "results"
+    ).classList.add(
+        "hidden"
+    );
+
+
+    document.getElementById(
+        "finalCard"
+    ).classList.add(
+        "hidden"
+    );
+
+
+    document.getElementById(
+        "graphCard"
+    ).classList.add(
+        "hidden"
+    );
+
+
+    document.getElementById(
+        "error"
+    ).textContent = "";
+
+
+    document.getElementById(
+        "recordStatus"
+    ).textContent = "";
+
+
+    document.getElementById(
+        "cameraStatus"
+    ).textContent = "";
+
+
+    voiceMode = null;
+    faceMode = null;
+
+
+    recordedVoiceBlob =
+        null;
+
+    capturedFaceBlob =
+        null;
+
+
+    document
+        .querySelectorAll(
+            ".option"
+        )
+        .forEach(
+            option =>
+                option.classList.remove(
+                    "active"
+                )
+        );
+
+
+    document
+        .getElementById(
+            "voiceUploadBox"
+        )
+        .classList.add(
+            "hidden"
+        );
+
+
+    document
+        .getElementById(
+            "liveVoiceBox"
+        )
+        .classList.add(
+            "hidden"
+        );
+
+
+    document
+        .getElementById(
+            "faceUploadBox"
+        )
+        .classList.add(
+            "hidden"
+        );
+
+
+    document
+        .getElementById(
+            "liveCameraBox"
+        )
+        .classList.add(
+            "hidden"
+        );
+
+
+    stopCamera();
+}
+
+</script>
+
+</body>
+</html>
